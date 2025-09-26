@@ -13,7 +13,7 @@ export const TodoList: React.FC<Props> = ({ todos, onShow }) => {
         <li key={todo.id}>
           <span>{todo.title}</span>
           <button type="button" onClick={() => onShow(todo)}>
-            Details
+            Show {/* updated from "Details" to match spec */}
           </button>
         </li>
       ))}

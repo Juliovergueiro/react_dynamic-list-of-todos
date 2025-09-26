@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import 'bulma/css/bulma.css';
 import '@fortawesome/fontawesome-free/css/all.css';
 
 import { Todo } from './types/Todo';
 import { User } from './types/User';
-
 import { getTodos, getUser } from './api/api';
 import { TodoList } from './components/TodoList/TodoList';
 import { TodoFilter } from './components/TodoFilter/TodoFilter';
@@ -13,7 +12,6 @@ import { Loader } from './components/Loader/Loader';
 
 export const App: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
-  const [visibleTodos, setVisibleTodos] = useState<Todo[]>([]);
   const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
@@ -45,23 +43,23 @@ export const App: React.FC = () => {
     loadTodos();
   }, []);
 
-  // filter todos
-  useEffect(() => {
-    let filtered = [...todos];
+  // filtered todos derived at render time
+  const filteredTodos = useMemo(() => {
+    let result = [...todos];
 
     if (query) {
-      filtered = filtered.filter(t =>
+      result = result.filter(t =>
         t.title.toLowerCase().includes(query.toLowerCase()),
       );
     }
 
     if (status !== 'all') {
-      filtered = filtered.filter(t =>
+      result = result.filter(t =>
         status === 'completed' ? t.completed : !t.completed,
       );
     }
 
-    setVisibleTodos(filtered);
+    return result;
   }, [todos, query, status]);
 
   const handleShow = async (todo: Todo) => {
@@ -108,7 +106,7 @@ export const App: React.FC = () => {
               {isTodosLoading && <Loader />}
               {todosError && <p className="has-text-danger">{todosError}</p>}
               {!isTodosLoading && !todosError && (
-                <TodoList todos={visibleTodos} onShow={handleShow} />
+                <TodoList todos={filteredTodos} onShow={handleShow} />
               )}
             </div>
           </div>

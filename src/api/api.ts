@@ -1,27 +1,38 @@
-// src/api/api.ts
 import { Todo } from '../types/Todo';
 import { User } from '../types/User';
 
+// helper to simulate network delay
+export const wait = (ms: number) =>
+  new Promise(resolve => setTimeout(resolve, ms));
+
 export async function getTodos(): Promise<Todo[]> {
   const res = await fetch(
-    'https://jsonplaceholder.typicode.com/todos?_limit=20',
-  ); // limit for demo
+    'https://mate-academy.github.io/react_dynamic-list-of-todos/api/todos.json',
+  );
 
   if (!res.ok) {
     throw new Error('Failed to fetch todos');
   }
 
-  return res.json();
+  const data = await res.json();
+
+  await wait(500); // artificial wait for loader
+
+  return data;
 }
 
 export async function getUser(userId: number): Promise<User> {
   const res = await fetch(
-    `https://jsonplaceholder.typicode.com/users/${userId}`,
+    `https://mate-academy.github.io/react_dynamic-list-of-todos/api/users/${userId}.json`,
   );
 
   if (!res.ok) {
     throw new Error('Failed to fetch user');
   }
 
-  return res.json();
+  const data = await res.json();
+
+  await wait(500); // artificial wait for loader
+
+  return data;
 }
