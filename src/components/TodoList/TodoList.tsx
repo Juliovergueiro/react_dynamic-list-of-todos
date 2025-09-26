@@ -1,28 +1,22 @@
-// src/components/TodoList/TodoList.tsx
 import React from 'react';
 import { Todo } from '../../types/Todo';
 
-interface Props {
+type Props = {
   todos: Todo[];
   onShow: (todo: Todo) => void;
-}
+};
 
 export const TodoList: React.FC<Props> = ({ todos, onShow }) => {
   return (
-    <div>
+    <ul className="todo-list">
       {todos.map(todo => (
-        <div key={todo.id} className="box">
-          <p>
-            <strong>{todo.title}</strong> – {todo.completed ? '✅' : '❌'}
-          </p>
-          <button
-            className="button is-small is-info"
-            onClick={() => onShow(todo)}
-          >
-            Show
+        <li key={todo.id}>
+          <span>{todo.title}</span>
+          <button type="button" onClick={() => onShow(todo)}>
+            Details
           </button>
-        </div>
+        </li>
       ))}
-    </div>
+    </ul>
   );
 };

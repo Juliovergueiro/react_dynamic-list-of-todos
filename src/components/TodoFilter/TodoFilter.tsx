@@ -1,4 +1,3 @@
-// src/components/TodoFilter/TodoFilter.tsx
 import React from 'react';
 
 interface Props {
@@ -26,7 +25,11 @@ export const TodoFilter: React.FC<Props> = ({
         />
       </p>
       {query && (
-        <button className="button is-light" onClick={() => onQueryChange('')}>
+        <button
+          type="button"
+          className="button is-light"
+          onClick={() => onQueryChange('')}
+        >
           ✖
         </button>
       )}

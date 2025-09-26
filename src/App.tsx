@@ -1,51 +1,92 @@
-/* eslint-disable padding-line-between-statements */
 import React, { useEffect, useState } from 'react';
-import { getTodos, getUser } from './api';
+import 'bulma/css/bulma.css';
+import '@fortawesome/fontawesome-free/css/all.css';
+
 import { Todo } from './types/Todo';
 import { User } from './types/User';
 
-import { TodoList } from './components/TodoList';
-import { TodoFilter } from './components/TodoFilter';
-import { TodoModal } from './components/TodoModal';
-import { Loader } from './components/Loader';
+import { getTodos, getUser } from './api/api';
+import { TodoList } from './components/TodoList/TodoList';
+import { TodoFilter } from './components/TodoFilter/TodoFilter';
+import { TodoModal } from './components/TodoModal/TodoModal';
+import { Loader } from './components/Loader/Loader';
 
 export const App: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [visibleTodos, setVisibleTodos] = useState<Todo[]>([]);
   const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState<'all' | 'completed' | 'active'>('all');
 
-  useEffect(() => {
-    setIsLoading(true);
+  const [isTodosLoading, setIsTodosLoading] = useState(false);
+  const [isUserLoading, setIsUserLoading] = useState(false);
 
-    getTodos()
-      .then(setTodos)
-      .finally(() => setIsLoading(false));
+  const [todosError, setTodosError] = useState<string | null>(null);
+  const [userError, setUserError] = useState<string | null>(null);
+
+  // load todos
+  useEffect(() => {
+    const loadTodos = async () => {
+      setIsTodosLoading(true);
+      setTodosError(null);
+      try {
+        const loadedTodos = await getTodos();
+
+        setTodos(loadedTodos);
+      } catch {
+        setTodosError('Não foi possível carregar os todos.');
+      } finally {
+        setIsTodosLoading(false);
+      }
+    };
+
+    loadTodos();
   }, []);
+
+  // filter todos
+  useEffect(() => {
+    let filtered = [...todos];
+
+    if (query) {
+      filtered = filtered.filter(t =>
+        t.title.toLowerCase().includes(query.toLowerCase()),
+      );
+    }
+
+    if (status !== 'all') {
+      filtered = filtered.filter(t =>
+        status === 'completed' ? t.completed : !t.completed,
+      );
+    }
+
+    setVisibleTodos(filtered);
+  }, [todos, query, status]);
 
   const handleShow = async (todo: Todo) => {
     setSelectedTodo(todo);
     setSelectedUser(null);
+    setUserError(null);
+    setIsUserLoading(true);
 
-    setIsLoading(true);
-    const user = await getUser(todo.userId);
-    setSelectedUser(user);
-    setIsLoading(false);
+    try {
+      const user = await getUser(todo.userId);
+
+      setSelectedUser(user);
+    } catch {
+      setUserError('Não foi possível carregar os dados do usuário.');
+    } finally {
+      setIsUserLoading(false);
+    }
   };
 
-  const handleClose = () => setSelectedTodo(null);
-
-  const visibleTodos = todos.filter(todo => {
-    const matchesQuery = todo.title.toLowerCase().includes(query.toLowerCase());
-    const matchesStatus =
-      status === 'all' ||
-      (status === 'completed' && todo.completed) ||
-      (status === 'active' && !todo.completed);
-
-    return matchesQuery && matchesStatus;
-  });
+  const handleClose = () => {
+    setSelectedTodo(null);
+    setSelectedUser(null);
+    setUserError(null);
+    setIsUserLoading(false);
+  };
 
   return (
     <>
@@ -64,20 +105,23 @@ export const App: React.FC = () => {
             </div>
 
             <div className="block">
-              {isLoading && <Loader />}
-              <TodoList todos={visibleTodos} onShow={handleShow} />
+              {isTodosLoading && <Loader />}
+              {todosError && <p className="has-text-danger">{todosError}</p>}
+              {!isTodosLoading && !todosError && (
+                <TodoList todos={visibleTodos} onShow={handleShow} />
+              )}
             </div>
           </div>
         </div>
       </div>
 
-      {selectedTodo && (
-        <TodoModal
-          todo={selectedTodo}
-          user={selectedUser}
-          onClose={handleClose}
-        />
-      )}
+      <TodoModal
+        todo={selectedTodo}
+        user={selectedUser}
+        isLoading={isUserLoading}
+        error={userError}
+        onClose={handleClose}
+      />
     </>
   );
 };
