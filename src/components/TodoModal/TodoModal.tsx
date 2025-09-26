@@ -1,43 +1,38 @@
+// src/components/TodoModal/TodoModal.tsx
 import React from 'react';
+import { Todo } from '../../types/Todo';
+import { User } from '../../types/User';
 import { Loader } from '../Loader';
 
-export const TodoModal: React.FC = () => {
+interface Props {
+  todo: Todo;
+  user: User | null;
+  onClose: () => void;
+}
+
+export const TodoModal: React.FC<Props> = ({ todo, user, onClose }) => {
   return (
-    <div className="modal is-active" data-cy="modal">
-      <div className="modal-background" />
+    <div className="modal is-active">
+      <div className="modal-background" onClick={onClose}></div>
+      <div className="modal-content box">
+        <button className="delete is-large" onClick={onClose}></button>
 
-      {true ? (
-        <Loader />
-      ) : (
-        <div className="modal-card">
-          <header className="modal-card-head">
-            <div
-              className="modal-card-title has-text-weight-medium"
-              data-cy="modal-header"
-            >
-              Todo #2
-            </div>
+        <h2 className="title">{todo.title}</h2>
+        <p>Status: {todo.completed ? 'Completed ✅' : 'Active ❌'}</p>
 
-            {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
-            <button type="button" className="delete" data-cy="modal-close" />
-          </header>
-
-          <div className="modal-card-body">
-            <p className="block" data-cy="modal-title">
-              quis ut nam facilis et officia qui
+        {!user ? (
+          <Loader />
+        ) : (
+          <div>
+            <h3 className="subtitle">User Details</h3>
+            <p>
+              <strong>{user.name}</strong>
             </p>
-
-            <p className="block" data-cy="modal-user">
-              {/* <strong className="has-text-success">Done</strong> */}
-              <strong className="has-text-danger">Planned</strong>
-
-              {' by '}
-
-              <a href="mailto:Sincere@april.biz">Leanne Graham</a>
-            </p>
+            <p>{user.email}</p>
+            <p>{user.phone}</p>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };
